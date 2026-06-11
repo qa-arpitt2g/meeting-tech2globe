@@ -5,6 +5,12 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FeatureCard from '../components/FeatureCard';
 import StatusCard from '../components/StatusCard';
+import DateTimePicker, {
+  isValidTimeFormat,
+  minTimeForToday,
+  nextTimeAfterStart,
+  todayValue
+} from '../components/DateTimePicker';
 
 /* ── Static data ─────────────────────────────────────────────── */
 const featureCards = [
@@ -42,36 +48,16 @@ const featureCards = [
 /* ── Form helpers ────────────────────────────────────────────── */
 const initialFormData = {
   date: '',
-  startTime: '09:00',
-  endTime: '10:00',
+  startTime: '',
+  endTime: '',
   agenda: '',
   bookingName: '',
   organizerEmail: '',
   remarks: ''
 };
 
-function todayValue() {
-  return new Date().toISOString().split('T')[0];
-}
 
-function timeOptions() {
-  const slots = [];
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 30) {
-      const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-      const period = h >= 12 ? 'PM' : 'AM';
-      const displayHour = h % 12 || 12;
-      const displayMin = String(m).padStart(2, '0');
-      slots.push({ value, label: `${displayHour}:${displayMin} ${period}` });
-    }
-  }
-  return slots;
-}
-
-/* ── Page ────────────────────────────────────────────────────── */
 export default function Home() {
-  const availableTimes = useMemo(() => timeOptions(), []);
-
   /* Modal state */
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [formData, setFormData] = useState(initialFormData);
@@ -107,6 +93,31 @@ export default function Home() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleStartChange = (date, startTime) => {
+    setFormData((prev) => {
+      const next = { ...prev, date, startTime };
+      if (prev.endTime && startTime >= prev.endTime) {
+        next.endTime = nextTimeAfterStart(startTime) || '';
+      }
+      return next;
+    });
+  };
+
+  const handleEndChange = (_date, endTime) => {
+    setFormData((prev) => ({ ...prev, endTime }));
+  };
+
+  const startMinTime = useMemo(() => (
+    formData.date === todayValue() ? minTimeForToday() : null
+  ), [formData.date]);
+
+  const endMinTime = useMemo(() => {
+    if (!formData.date || !formData.startTime) {
+      return formData.date === todayValue() ? minTimeForToday() : null;
+    }
+    return nextTimeAfterStart(formData.startTime);
+  }, [formData.date, formData.startTime]);
+
   const addGuests = (value) => {
     const emails = value.split(',').map((e) => e.trim()).filter(Boolean);
     if (!emails.length) return;
@@ -123,9 +134,14 @@ export default function Home() {
   const removeGuest = (email) => setGuests((prev) => prev.filter((g) => g !== email));
 
   const validateForm = (allGuests) => {
-    if (!formData.date) throw new Error('Please select a booking date.');
+    if (!formData.date || !formData.startTime) throw new Error('Please select a start date and time.');
+    if (!isValidTimeFormat(formData.startTime)) throw new Error('Please enter a valid start time (HH:mm).');
     if (formData.date < todayValue()) throw new Error('Backdate bookings are not allowed.');
-    if (!formData.startTime || !formData.endTime) throw new Error('Please select start and end times.');
+    if (!formData.endTime) throw new Error('Please select an end time.');
+    if (!isValidTimeFormat(formData.endTime)) throw new Error('Please enter a valid end time (HH:mm).');
+    if (formData.date === todayValue() && formData.startTime < minTimeForToday()) {
+      throw new Error('Start time cannot be in the past.');
+    }
     if (formData.startTime >= formData.endTime) throw new Error('End time must be after start time.');
     if (!formData.bookingName.trim()) throw new Error('Please enter the booking person name.');
     if (!isValidEmail(formData.organizerEmail)) throw new Error('Please enter a valid organizer email.');
@@ -216,7 +232,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h2 id="modal-title">Reserve a Space</h2>
-                  <p>Tech2Globe HQ &bull; {selectedRoom.title}</p>
+                  <p>Tech2Globe &bull; {selectedRoom.title}</p>
                 </div>
               </div>
               <button
@@ -231,41 +247,30 @@ export default function Home() {
 
             {/* Form */}
             <form className="booking-form" id="bookingForm" onSubmit={handleSubmit}>
-              <div className="availability-banner" role="status">
-                <span className="material-symbols-outlined">verified</span>
-                <p>All times selected are currently available.</p>
-              </div>
-
-              {/* 1. Date + Start Time + End Time */}
-              <div className="form-row three-columns">
-                <label htmlFor="bookingDate">
-                  Date
-                  <input
-                    id="bookingDate"
-                    name="date"
-                    type="date"
-                    min={todayValue()}
-                    value={formData.date}
-                    onChange={updateField}
-                    required
-                  />
-                </label>
-                <label htmlFor="startTime">
-                  Start Time
-                  <select id="startTime" name="startTime" value={formData.startTime} onChange={updateField} required>
-                    {availableTimes.map((t) => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </label>
-                <label htmlFor="endTime">
-                  End Time
-                  <select id="endTime" name="endTime" value={formData.endTime} onChange={updateField} required>
-                    {availableTimes.map((t) => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </label>
+              {/* 1. Start Date & Time + End Date & Time */}
+              <div className="form-row two-columns">
+                <DateTimePicker
+                  id="startDateTime"
+                  label="Start Date & Time"
+                  date={formData.date}
+                  time={formData.startTime}
+                  onChange={handleStartChange}
+                  minDate={todayValue()}
+                  minTime={startMinTime}
+                  required
+                />
+                <DateTimePicker
+                  id="endDateTime"
+                  label="End Date & Time"
+                  date={formData.date}
+                  time={formData.endTime}
+                  onChange={handleEndChange}
+                  minDate={formData.date || todayValue()}
+                  minTime={endMinTime}
+                  fixedDate={formData.date || null}
+                  disabled={!formData.date || !formData.startTime}
+                  required
+                />
               </div>
 
               {/* 2. Meeting Agenda */}

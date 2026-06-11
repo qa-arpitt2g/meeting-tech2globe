@@ -744,6 +744,354 @@ textarea { resize: vertical; }
   color: var(--on-surface-var);
 }
 
+/* ─── DateTime Picker ────────────────────────────────────────── */
+.datetime-picker {
+  position: relative;
+}
+
+.datetime-input-shell {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.datetime-date-display {
+  flex: 1.2;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--surface-low);
+  color: var(--on-surface);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.datetime-date-display:hover:not(:disabled) {
+  border-color: var(--secondary);
+}
+
+.datetime-time-input {
+  flex: 0.8;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--on-surface);
+  font-size: 15px;
+  text-align: center;
+}
+
+.datetime-time-input:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 2px rgba(79, 90, 152, 0.18);
+}
+
+.datetime-field-error {
+  font-size: 12px;
+  color: var(--error);
+  margin-top: 2px;
+}
+
+.datetime-input-shell input {
+  flex: 1;
+  cursor: pointer;
+}
+
+.datetime-input-shell.is-open .datetime-date-display,
+.datetime-input-shell.is-open .datetime-time-input {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(17, 24, 68, 0.18);
+}
+
+.datetime-input-shell.is-disabled .datetime-date-display,
+.datetime-input-shell.is-disabled .datetime-time-input,
+.datetime-input-shell.is-disabled .datetime-trigger-button {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.datetime-trigger-button:disabled {
+  cursor: not-allowed;
+}
+
+.datetime-trigger-button {
+  width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--on-surface-var);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.datetime-trigger-button:hover {
+  border-color: var(--secondary);
+  background: var(--surface-low);
+}
+
+.datetime-trigger-button .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.datetime-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  width: min(420px, calc(100vw - 48px));
+}
+
+.datetime-popup-panel {
+  display: grid;
+  grid-template-columns: 1fr 92px;
+  overflow: hidden;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+}
+
+.datetime-calendar {
+  padding: 12px;
+  min-width: 0;
+}
+
+.datetime-calendar-header {
+  display: grid;
+  grid-template-columns: 32px 32px 1fr 32px;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.datetime-nav-button,
+.datetime-home-button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--on-surface-var);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.datetime-nav-button:hover,
+.datetime-home-button:hover {
+  background: var(--surface-low);
+}
+
+.datetime-nav-button .material-symbols-outlined,
+.datetime-home-button .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.datetime-month-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  color: var(--on-surface);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.datetime-month-label:hover {
+  background: var(--surface-low);
+}
+
+.datetime-month-label .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--on-surface-var);
+}
+
+.datetime-month-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.datetime-month-option {
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--on-surface);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 4px;
+  cursor: pointer;
+}
+
+.datetime-month-option:hover {
+  background: var(--surface-low);
+}
+
+.datetime-month-option.is-selected {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.datetime-weekdays,
+.datetime-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.datetime-weekdays {
+  margin-bottom: 4px;
+}
+
+.datetime-weekdays span {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on-surface-var);
+  padding: 4px 0;
+}
+
+.datetime-day {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.datetime-day:hover:not(:disabled) {
+  background: rgba(186, 195, 255, 0.35);
+}
+
+.datetime-day.is-outside {
+  color: var(--outline);
+}
+
+.datetime-day.is-selected {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.datetime-day.is-disabled {
+  color: var(--outline);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.datetime-time-panel {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--outline-variant);
+  background: var(--surface-low);
+}
+
+.datetime-time-scroll {
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  background: var(--surface);
+  color: var(--on-surface-var);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.datetime-time-scroll:hover {
+  background: var(--surface-highest);
+}
+
+.datetime-time-scroll .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.datetime-time-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 248px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline-variant) transparent;
+}
+
+.datetime-time-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.datetime-time-list::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 4px;
+}
+
+.datetime-time-slot {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid rgba(199, 197, 208, 0.45);
+  background: transparent;
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.datetime-time-slot:hover:not(:disabled) {
+  background: rgba(186, 195, 255, 0.35);
+}
+
+.datetime-time-slot.is-selected {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.datetime-time-slot.is-disabled {
+  color: var(--outline);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 520px) {
+  .datetime-popup {
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(360px, calc(100vw - 32px));
+  }
+
+  .datetime-popup-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .datetime-time-panel {
+    border-left: none;
+    border-top: 1px solid var(--outline-variant);
+  }
+
+  .datetime-time-list {
+    max-height: 160px;
+  }
+}
+
 /* ─── Toast ──────────────────────────────────────────────────── */
 .success-toast {
   position: fixed;
