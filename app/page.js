@@ -195,7 +195,7 @@ export default function Home() {
         <section className="mx-auto grid max-w-7xl gap-4 px-4 py-10 md:grid-cols-2 md:items-center md:gap-[60px] md:px-8 md:max-h-[260px] sm:max-h-[220px]">
           <div className="flex min-w-0 items-center gap-4">
             <div className="mt-0 h-12 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-blue-600 to-violet-500 sm:h-14 md:h-16"></div>
-            <h1 className="font-display text-4xl font-extrabold leading-tight text-slate-950 text-center md:text-left sm:text-5xl md:text-5xl">
+            <h1 className="font-sans text-4xl font-extrabold leading-tight text-slate-950 text-center md:text-left sm:text-5xl md:text-5xl">
               <span>Room Booking</span>
               <span className="ml-1 bg-gradient-to-r from-blue-700 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">Portal</span>
             </h1>
@@ -238,7 +238,7 @@ export default function Home() {
                   <span className="material-symbols-outlined text-[22px]">event</span>
                 </div>
                 <div className="min-w-0">
-                  <h2 id="modal-title" className="truncate font-display text-xl font-bold leading-7 text-slate-950">Reserve a Space</h2>
+                  <h2 id="modal-title" className="truncate font-sans text-xl font-bold leading-7 text-slate-950">Reserve a Space</h2>
                   <p className="truncate text-sm font-medium text-slate-500">Tech2Globe &bull; {selectedRoom.title}</p>
                 </div>
               </div>

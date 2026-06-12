@@ -177,12 +177,13 @@ export async function POST(request) {
         <head>
           <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
         </head>
-        <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;">
+        <body style="margin:0;padding:0;background-color:#ffffff;font-family:'Poppins',sans-serif;font-size:14px;">
           <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;">
             <tr>
               <td align="center" style="padding:32px 16px;">
-                <table width="600" border="0" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;">
+                <table width="600" border="0" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;font-family:'Poppins',sans-serif;">
                   <tr>
                     <td style="background-color:#2563eb;padding:32px 24px;border-radius:8px 8px 0 0;text-align:center;color:#ffffff;">
                       <h1 style="margin:0;font-size:24px;font-weight:700;line-height:1.4;">Booking Confirmed</h1>

@@ -28,7 +28,7 @@ export default function FeatureCard({ title, description, buttonText, buttonVari
       </div>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6 lg:p-7">
-        <h2 className="font-display text-2xl font-bold leading-tight text-slate-950 sm:text-[26px] lg:text-3xl">
+        <h2 className="font-sans text-2xl font-bold leading-tight text-slate-950 sm:text-[26px] lg:text-3xl">
           {title}
         </h2>
         <p className="mt-3 flex-1 text-sm leading-6 text-slate-600 sm:text-base">
