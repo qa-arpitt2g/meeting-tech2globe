@@ -25,6 +25,13 @@ function formatTime(value) {
   return `${displayHour}:${minute} ${period}`;
 }
 
+function formatEmailDate(isoDate) {
+  const match = String(isoDate || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return isoDate;
+  const [, year, month, day] = match;
+  return `${day}-${month}-${year}`;
+}
+
 function todayValue() {
   return new Date().toISOString().split('T')[0];
 }
@@ -46,8 +53,17 @@ function formatGuestNames(guests) {
   return names.length ? names.join(', ') : 'None';
 }
 
+function timeToMinutes(value) {
+  const [hour = '0', minute = '0'] = String(value).split(':').map(Number);
+  return hour * 60 + minute;
+}
+
 function hasOverlap(existingStart, existingEnd, requestedStart, requestedEnd) {
-  return requestedStart < existingEnd && requestedEnd > existingStart;
+  const existStart = timeToMinutes(existingStart);
+  const existEnd = timeToMinutes(existingEnd);
+  const reqStart = timeToMinutes(requestedStart);
+  const reqEnd = timeToMinutes(requestedEnd);
+  return reqStart < existEnd && reqEnd > existStart;
 }
 
 function calculateDurationMinutes(startTime, endTime) {
@@ -137,7 +153,9 @@ export async function POST(request) {
 
     if (conflictingBooking) {
       return NextResponse.json(
-        { error: `This ${roomLabel || roomType} is already booked from ${formatTime(conflictingBooking.startTime)} to ${formatTime(conflictingBooking.endTime)}.` },
+        {
+          error: `This ${roomLabel || roomType} is already booked on ${formatEmailDate(date)} from ${formatTime(conflictingBooking.startTime)} to ${formatTime(conflictingBooking.endTime)}.`
+        },
         { status: 409 }
       );
     }
@@ -147,7 +165,8 @@ export async function POST(request) {
     const safeBookingName = escapeHtml(bookingName);
     const safeAgenda = escapeHtml(agenda);
     const safeRemarks = escapeHtml(remarks || 'None');
-    const safeDate = escapeHtml(date);
+    const displayDate = formatEmailDate(date);
+    const safeDate = escapeHtml(displayDate);
     const safeStart = escapeHtml(formatTime(startTime));
     const safeEnd = escapeHtml(formatTime(endTime));
     const guestNames = escapeHtml(formatGuestNames(guests));
@@ -238,7 +257,7 @@ export async function POST(request) {
       `Room: ${roomLabel || roomType}`,
       `Meeting Agenda: ${agenda}`,
       `Booking Person: ${bookingName}`,
-      `Time: ${date}`,
+      `Time: ${displayDate}`,
       `${formatTime(startTime)} - ${formatTime(endTime)}`,
       `Guest: ${guestNames || 'None'}`,
       `Remarks: ${remarks || 'None'}`,
