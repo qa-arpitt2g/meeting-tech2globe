@@ -95,8 +95,8 @@ export default function Home() {
   const handleStartChange = (date, startTime) => {
     setFormData((prev) => {
       const next = { ...prev, date, startTime };
-      const suggestedEnd = nextTimeAfterStart(startTime);
-      if (!prev.endTime || !isValidTimeFormat(prev.endTime) || parseTimeToMinutes(prev.endTime) < parseTimeToMinutes(startTime) + 60) {
+      if (!prev.endTime || !isValidTimeFormat(prev.endTime) || parseTimeToMinutes(prev.endTime) <= parseTimeToMinutes(startTime)) {
+        const suggestedEnd = nextTimeAfterStart(startTime);
         next.endTime = suggestedEnd || '';
       }
       return next;
@@ -142,8 +142,8 @@ export default function Home() {
     if (formData.date === todayValue() && formData.startTime < minTimeForToday()) {
       throw new Error('Start time cannot be in the past.');
     }
-    if (parseTimeToMinutes(formData.endTime) - parseTimeToMinutes(formData.startTime) < 60) {
-      throw new Error('Booking must be at least 1 hour and end after the start time.');
+    if (parseTimeToMinutes(formData.endTime) - parseTimeToMinutes(formData.startTime) < 1) {
+      throw new Error('Booking duration must be at least 1 minute.');
     }
     if (!formData.bookingName.trim()) throw new Error('Please enter the booking person name.');
     if (!isValidEmail(formData.organizerEmail)) throw new Error('Please enter a valid organizer email.');
