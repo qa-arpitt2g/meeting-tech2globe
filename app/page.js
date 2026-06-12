@@ -193,11 +193,19 @@ export default function Home() {
 
         {/* ── Hero ── */}
         <section className="home-hero container">
-          <h1>Room Booking Portal</h1>
-          <p>
-            Reserve Conference Rooms and Meeting Rooms in Seconds. Experience
-            frictionless workplace logistics with our enterprise-grade scheduling platform.
-          </p>
+          <div className="hero-title-container">
+            <div className="hero-title-bar"></div>
+            <h1>
+              <span className="hero-title-dark">Room Booking</span><br/>
+              <span className="hero-title-gradient">Portal</span>
+            </h1>
+          </div>
+          <div className="hero-desc-container">
+            <p>
+              Reserve Conference Rooms and Meeting Rooms in Seconds.<br/> Experience
+              frictionless workplace logistics with our<br/> enterprise-grade scheduling platform.
+            </p>
+          </div>
         </section>
 
         {/* ── Feature Cards ── */}
@@ -247,11 +255,16 @@ export default function Home() {
 
             {/* Form */}
             <form className="booking-form" id="bookingForm" onSubmit={handleSubmit}>
-              {/* 1. Start Date & Time + End Date & Time */}
+              <div className="availability-banner" role="status">
+                <span className="material-symbols-outlined">verified</span>
+                <p>All times selected are currently available.</p>
+              </div>
+
+              {/* 1. Start Time + End Time */}
               <div className="form-row two-columns">
                 <DateTimePicker
-                  id="startDateTime"
-                  label="Start Date & Time"
+                  id="startTime"
+                  label="Start Time"
                   date={formData.date}
                   time={formData.startTime}
                   onChange={handleStartChange}
@@ -260,8 +273,8 @@ export default function Home() {
                   required
                 />
                 <DateTimePicker
-                  id="endDateTime"
-                  label="End Date & Time"
+                  id="endTime"
+                  label="End Time"
                   date={formData.date}
                   time={formData.endTime}
                   onChange={handleEndChange}

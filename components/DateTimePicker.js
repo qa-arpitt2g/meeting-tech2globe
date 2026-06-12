@@ -232,46 +232,38 @@ export default function DateTimePicker({
 
   return (
     <div className="datetime-picker" ref={rootRef}>
-      <label htmlFor={`${fieldId}-datetime`}>
+      <label htmlFor={`${fieldId}-time`}>
         {label}
         <div className={`datetime-input-shell${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}`}>
+          <button
+            type="button"
+            className="datetime-date-display"
+            onClick={openPicker}
+            disabled={disabled}
+            aria-label={`Select date for ${label}`}
+          >
+            {date ? formatDisplayDate(date) : 'dd-mm-yyyy'}
+          </button>
+
           <input
-            id={`${fieldId}-datetime`}
+            id={`${fieldId}-time`}
             type="text"
-            className="datetime-merged-input"
-            inputMode="text"
-            value={`${date ? formatDisplayDate(date) : 'dd-mm-yyyy'} ${draftTime || 'HH:mm'}`}
-            placeholder="dd-mm-yyyy HH:mm"
+            className="datetime-time-input"
+            inputMode="numeric"
+            value={draftTime}
+            placeholder="HH:mm"
             disabled={disabled}
             required={required}
             aria-invalid={timeError ? 'true' : 'false'}
             onChange={(event) => {
-              const value = event.target.value;
-              const parts = value.split(' ');
-              if (parts.length >= 2) {
-                const dateStr = parts[0];
-                const timeStr = parts.slice(1).join(' ');
-                setDraftTime(timeStr);
-              }
+              setDraftTime(event.target.value);
               setTimeError('');
             }}
-            onBlur={() => {
-              const value = this.value || '';
-              const parts = value.split(' ');
-              if (parts.length >= 2) {
-                const timeStr = parts.slice(1).join(' ');
-                commitTime(timeStr);
-              }
-            }}
+            onBlur={() => commitTime(draftTime)}
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
-                const value = event.target.value;
-                const parts = value.split(' ');
-                if (parts.length >= 2) {
-                  const timeStr = parts.slice(1).join(' ');
-                  commitTime(timeStr);
-                }
+                commitTime(draftTime);
               }
             }}
           />
