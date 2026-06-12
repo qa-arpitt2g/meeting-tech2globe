@@ -26,7 +26,6 @@ const featureCards = [
     image:
       '/assets/Conference.png',
     alt: 'Conference room interior',
-    capacity: '8–20 seats'
   },
   {
     type: 'meeting',
@@ -38,8 +37,7 @@ const featureCards = [
     icon: 'meeting_room',
     image:
       '/assets/Meeting.png',
-    alt: 'Meeting room interior',
-    capacity: '2–6 seats'
+    alt: 'Meeting room interior',    
   }
 ];
 
