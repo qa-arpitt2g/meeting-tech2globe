@@ -1,64 +1,63 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { createPopper } from '@popperjs/core';
+import { DayPicker } from 'react-day-picker';
+import { format, isValid as isValidDate, parseISO } from 'date-fns';
+import 'react-day-picker/dist/style.css';
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
-
-export function formatDisplayDate(isoDate) {
-  if (!isoDate) return '';
-  const [year, month, day] = isoDate.split('-');
-  return `${day}-${month}-${year}`;
-}
+const TIME_SUGGESTIONS = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`);
 
 export function todayValue() {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function parseIsoDate(isoDate) {
-  const [year, month, day] = isoDate.split('-').map(Number);
-  return new Date(year, month - 1, day);
+  return format(now, 'yyyy-MM-dd');
 }
 
 function toIsoDate(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  if (!date) return '';
+  return format(date, 'yyyy-MM-dd');
 }
 
-function buildHourSlots() {
-  return Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}:00`);
+function parseIsoDate(isoDate) {
+  if (!isoDate) return null;
+  const parsed = parseISO(isoDate);
+  return isValidDate(parsed) ? parsed : null;
 }
 
-function parseTimeToMinutes(value) {
-  const [hour, minute = '0'] = value.split(':');
-  return Number(hour) * 60 + Number(minute);
-}
+function normalizeTimeInput(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return null;
 
-function formatMinutesAsTime(totalMinutes) {
-  const hour = Math.floor(totalMinutes / 60);
-  const minute = totalMinutes % 60;
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-}
+  const normalized = trimmed.toUpperCase().replace(/\s+/g, ' ');
+  let match = normalized.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
 
-export function normalizeTimeInput(value) {
-  const trimmed = value.trim();
-  const match = trimmed.match(/^(\d{1,2}):(\d{1,2})$/);
-  if (!match) return null;
+  if (match) {
+    let hour = Number(match[1]);
+    const minute = Number(match[2]);
+    const suffix = match[3];
+    if (minute < 0 || minute > 59) return null;
+    if (suffix) {
+      if (hour < 1 || hour > 12) return null;
+      if (suffix === 'PM' && hour !== 12) hour += 12;
+      if (suffix === 'AM' && hour === 12) hour = 0;
+    } else if (hour < 0 || hour > 23) {
+      return null;
+    }
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  }
 
-  const hour = Number(match[1]);
-  const minute = Number(match[2]);
-  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  match = normalized.match(/^(\d{1,2})\s*(AM|PM)$/);
+  if (match) {
+    let hour = Number(match[1]);
+    const suffix = match[2];
+    if (hour < 1 || hour > 12) return null;
+    if (suffix === 'PM' && hour !== 12) hour += 12;
+    if (suffix === 'AM' && hour === 12) hour = 0;
+    return `${String(hour).padStart(2, '0')}:00`;
+  }
 
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  return null;
 }
 
 export function isValidTimeFormat(value) {
@@ -70,30 +69,36 @@ export function minTimeForToday() {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
+export function parseTimeToMinutes(value) {
+  const [hour = '0', minute = '0'] = String(value).split(':');
+  return Number(hour) * 60 + Number(minute);
+}
+
 export function nextTimeAfterStart(startTime) {
-  const next = parseTimeToMinutes(startTime) + 1;
+  const next = parseTimeToMinutes(startTime) + 60;
   if (next >= 24 * 60) return null;
-  return formatMinutesAsTime(next);
+  const hour = Math.floor(next / 60);
+  const minute = next % 60;
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 }
 
-function compareTimes(a, b) {
-  return parseTimeToMinutes(a) - parseTimeToMinutes(b);
+function formatDateDisplay(date) {
+  if (!date) return '';
+  return format(date, 'dd MMM yyyy');
 }
 
-function getCalendarDays(viewYear, viewMonth) {
-  const firstDay = new Date(viewYear, viewMonth, 1);
-  const startOffset = firstDay.getDay();
-  const gridStart = new Date(viewYear, viewMonth, 1 - startOffset);
+function coerceDate(value) {
+  const parsed = parseIsoDate(value);
+  return parsed || null;
+}
 
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(gridStart);
-    date.setDate(gridStart.getDate() + index);
-    return {
-      iso: toIsoDate(date),
-      day: date.getDate(),
-      inMonth: date.getMonth() === viewMonth
-    };
-  });
+function toDateTime(dateIso, time) {
+  if (!dateIso || !time) return null;
+  const date = coerceDate(dateIso);
+  if (!date) return null;
+  const [hour, minute] = time.split(':').map(Number);
+  date.setHours(hour, minute, 0, 0);
+  return date;
 }
 
 export default function DateTimePicker({
@@ -103,334 +108,155 @@ export default function DateTimePicker({
   time,
   onChange,
   minDate = todayValue(),
-  minTime = null,
-  fixedDate = null,
   disabled = false,
   required = false
 }) {
   const fallbackId = useId();
   const fieldId = id || fallbackId;
-  const rootRef = useRef(null);
-  const timeListRef = useRef(null);
-  const hourSlots = buildHourSlots();
-
-  const [open, setOpen] = useState(false);
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [draftTime, setDraftTime] = useState(time || '');
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [localTime, setLocalTime] = useState(time || '');
   const [timeError, setTimeError] = useState('');
-  const initialView = date ? parseIsoDate(date) : new Date();
-  const [viewYear, setViewYear] = useState(initialView.getFullYear());
-  const [viewMonth, setViewMonth] = useState(initialView.getMonth());
+  const anchorRef = useRef(null);
+  const popoverRef = useRef(null);
+  const popperInstance = useRef(null);
+
+  const selectedDate = useMemo(() => coerceDate(date), [date]);
+  const formattedDate = selectedDate ? formatDateDisplay(selectedDate) : '';
 
   useEffect(() => {
-    setDraftTime(time || '');
-    setTimeError('');
+    setLocalTime(time || '');
   }, [time]);
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (!calendarOpen) return;
+    if (!anchorRef.current || !popoverRef.current) return;
+    popperInstance.current = createPopper(anchorRef.current, popoverRef.current, {
+      placement: 'bottom-start',
+      modifiers: [
+        { name: 'flip', options: { fallbackPlacements: ['top-start', 'bottom-start', 'top-end', 'bottom-end'] } },
+        { name: 'preventOverflow', options: { rootBoundary: 'viewport', padding: 8 } },
+        { name: 'offset', options: { offset: [0, 8] } }
+      ]
+    });
 
-    const handlePointerDown = (event) => {
-      if (rootRef.current && !rootRef.current.contains(event.target)) {
-        setOpen(false);
-        setShowMonthPicker(false);
+    return () => {
+      popperInstance.current?.destroy();
+      popperInstance.current = null;
+    };
+  }, [calendarOpen]);
+
+  useEffect(() => {
+    if (!calendarOpen) return undefined;
+
+    const handleClickOutside = (event) => {
+      if (
+        anchorRef.current && !anchorRef.current.contains(event.target) &&
+        popoverRef.current && !popoverRef.current.contains(event.target)
+      ) {
+        setCalendarOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('touchstart', handlePointerDown);
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('touchstart', handlePointerDown);
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setCalendarOpen(false);
     };
-  }, [open]);
 
-  useEffect(() => {
-    if (!open || !time || !timeListRef.current) return;
-    const selected = timeListRef.current.querySelector('[data-selected="true"]');
-    selected?.scrollIntoView({ block: 'center' });
-  }, [open, time, viewMonth, viewYear]);
+    window.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
 
-  const activeDate = fixedDate || date || minDate;
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [calendarOpen]);
 
-  const isTimeDisabled = (slot) => {
-    if (activeDate === todayValue() && minTime && compareTimes(slot, minTime) < 0) {
-      return true;
-    }
-    if (activeDate === minDate && minTime && compareTimes(slot, minTime) < 0) {
-      return true;
-    }
-    return false;
+  const handleDateSelect = (selected) => {
+    if (!selected || disabled) return;
+    setCalendarOpen(false);
+    onChange(toIsoDate(selected), time || '');
   };
 
-  const commitTime = (rawValue) => {
-    if (!rawValue.trim()) {
-      setDraftTime(time || '');
-      setTimeError('');
-      return;
-    }
-
-    const normalized = normalizeTimeInput(rawValue);
-    if (!normalized) {
-      setDraftTime(time || '');
-      setTimeError('Use HH:mm format');
-      return;
-    }
-
-    if (isTimeDisabled(normalized)) {
-      setDraftTime(time || '');
-      setTimeError('Time is not available');
-      return;
-    }
-
-    setDraftTime(normalized);
-    setTimeError('');
-    onChange(activeDate, normalized);
+  const handleTimeChange = (event) => {
+    setLocalTime(event.target.value);
+    if (timeError) setTimeError('');
   };
 
-  const openPicker = () => {
+  const handleTimeBlur = () => {
     if (disabled) return;
-    const nextView = (fixedDate || date) ? parseIsoDate(fixedDate || date) : new Date();
-    setViewYear(nextView.getFullYear());
-    setViewMonth(nextView.getMonth());
-    setOpen(true);
-  };
+    if (!localTime.trim()) {
+      setTimeError(required ? 'Please enter a time.' : '');
+      onChange(date || '', '');
+      return;
+    }
 
-  const handleDateSelect = (iso) => {
-    if (fixedDate && iso !== fixedDate) return;
-    if (iso < minDate) return;
-    onChange(iso, time || draftTime || '09:00');
-  };
+    const normalized = normalizeTimeInput(localTime);
+    if (!normalized) {
+      setTimeError('Invalid time. Use 09:00, 13:00 or 9:00 AM.');
+      return;
+    }
 
-  const handleTimeSelect = (slot) => {
-    if (isTimeDisabled(slot)) return;
-    setDraftTime(slot);
+    setLocalTime(normalized);
     setTimeError('');
-    onChange(activeDate, slot);
-    setOpen(false);
-    setShowMonthPicker(false);
-  };
-
-  const calendarDays = getCalendarDays(viewYear, viewMonth);
-
-  const goToMonth = (monthIndex) => {
-    setViewMonth(monthIndex);
-    setShowMonthPicker(false);
-  };
-
-  const goToToday = () => {
-    const now = new Date();
-    setViewYear(now.getFullYear());
-    setViewMonth(now.getMonth());
-    handleDateSelect(todayValue());
-  };
-
-  const scrollTimes = (direction) => {
-    if (!timeListRef.current) return;
-    timeListRef.current.scrollBy({ top: direction * 120, behavior: 'smooth' });
+    onChange(date || '', normalized);
   };
 
   return (
-    <div className="datetime-picker" ref={rootRef}>
-      <label htmlFor={`${fieldId}-time`}>
+    <div className="datetime-picker">
+      <label htmlFor={fieldId} className="datetime-picker-label">
         {label}
-        <div className={`datetime-input-shell${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}`}>
+      </label>
+      <div className="datetime-picker-row">
+        <div className="datetime-field datetime-field--date">
           <button
+            ref={anchorRef}
             type="button"
-            className="datetime-date-display"
-            onClick={openPicker}
+            className="datetime-date-button"
+            onClick={() => setCalendarOpen((open) => !open)}
             disabled={disabled}
-            aria-label={`Select date for ${label}`}
+            aria-haspopup="dialog"
+            aria-expanded={calendarOpen}
           >
-            {date ? formatDisplayDate(date) : 'dd-mm-yyyy'}
-          </button>
-
-          <input
-            id={`${fieldId}-time`}
-            type="text"
-            className="datetime-time-input"
-            inputMode="numeric"
-            value={draftTime}
-            placeholder="HH:mm"
-            disabled={disabled}
-            required={required}
-            aria-invalid={timeError ? 'true' : 'false'}
-            onChange={(event) => {
-              setDraftTime(event.target.value);
-              setTimeError('');
-            }}
-            onBlur={() => commitTime(draftTime)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                commitTime(draftTime);
-              }
-            }}
-          />
-
-          <button
-            type="button"
-            className="datetime-trigger-button"
-            onClick={openPicker}
-            disabled={disabled}
-            aria-label={`Open ${label} picker`}
-          >
+            <span>{formattedDate || 'Select date'}</span>
             <span className="material-symbols-outlined">calendar_month</span>
           </button>
         </div>
-        {timeError && <span className="datetime-field-error">{timeError}</span>}
-      </label>
 
-      {open && (
-        <div className="datetime-popup" role="dialog" aria-label={`${label} picker`}>
-          <div className="datetime-popup-panel">
-            <div className="datetime-calendar">
-              <div className="datetime-calendar-header">
-                <button
-                  type="button"
-                  className="datetime-nav-button"
-                  onClick={() => {
-                    if (viewMonth === 0) {
-                      setViewYear((year) => year - 1);
-                      setViewMonth(11);
-                      return;
-                    }
-                    setViewMonth((month) => month - 1);
-                  }}
-                  aria-label="Previous month"
-                >
-                  <span className="material-symbols-outlined">chevron_left</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="datetime-home-button"
-                  onClick={goToToday}
-                  aria-label="Go to today"
-                >
-                  <span className="material-symbols-outlined">home</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="datetime-month-label"
-                  onClick={() => setShowMonthPicker((value) => !value)}
-                  aria-expanded={showMonthPicker}
-                >
-                  {MONTHS[viewMonth]} {viewYear}
-                  <span className="material-symbols-outlined">expand_more</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="datetime-nav-button"
-                  onClick={() => {
-                    if (viewMonth === 11) {
-                      setViewYear((year) => year + 1);
-                      setViewMonth(0);
-                      return;
-                    }
-                    setViewMonth((month) => month + 1);
-                  }}
-                  aria-label="Next month"
-                >
-                  <span className="material-symbols-outlined">chevron_right</span>
-                </button>
-              </div>
-
-              {showMonthPicker && (
-                <div className="datetime-month-grid">
-                  {MONTHS.map((monthName, index) => (
-                    <button
-                      key={monthName}
-                      type="button"
-                      className={`datetime-month-option${index === viewMonth ? ' is-selected' : ''}`}
-                      onClick={() => goToMonth(index)}
-                    >
-                      {monthName.slice(0, 3)}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="datetime-weekdays">
-                {WEEKDAYS.map((day) => (
-                  <span key={day}>{day}</span>
-                ))}
-              </div>
-
-              <div className="datetime-days">
-                {calendarDays.map((day) => {
-                  const isSelected = (fixedDate || date) === day.iso;
-                  const isDayDisabled = day.iso < minDate || (fixedDate && day.iso !== fixedDate);
-
-                  return (
-                    <button
-                      key={day.iso}
-                      type="button"
-                      className={[
-                        'datetime-day',
-                        !day.inMonth ? 'is-outside' : '',
-                        isSelected ? 'is-selected' : '',
-                        isDayDisabled ? 'is-disabled' : ''
-                      ].filter(Boolean).join(' ')}
-                      onClick={() => handleDateSelect(day.iso)}
-                      disabled={isDayDisabled}
-                      aria-label={formatDisplayDate(day.iso)}
-                      aria-pressed={isSelected}
-                    >
-                      {day.day}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="datetime-time-panel">
-              <button
-                type="button"
-                className="datetime-time-scroll"
-                onClick={() => scrollTimes(-1)}
-                aria-label="Scroll up"
-              >
-                <span className="material-symbols-outlined">expand_less</span>
-              </button>
-
-              <div className="datetime-time-list" ref={timeListRef}>
-                {hourSlots.map((slot) => {
-                  const slotDisabled = isTimeDisabled(slot);
-                  const selected = time === slot;
-
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      className={[
-                        'datetime-time-slot',
-                        selected ? 'is-selected' : '',
-                        slotDisabled ? 'is-disabled' : ''
-                      ].filter(Boolean).join(' ')}
-                      onClick={() => handleTimeSelect(slot)}
-                      disabled={slotDisabled}
-                      data-selected={selected ? 'true' : 'false'}
-                    >
-                      {slot}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                type="button"
-                className="datetime-time-scroll"
-                onClick={() => scrollTimes(1)}
-                aria-label="Scroll down"
-              >
-                <span className="material-symbols-outlined">expand_more</span>
-              </button>
-            </div>
-          </div>
+        <div className="datetime-field datetime-field--time">
+          <input
+            id={`${fieldId}-time`}
+            type="text"
+            value={localTime}
+            onChange={handleTimeChange}
+            onBlur={handleTimeBlur}
+            disabled={disabled}
+            required={required}
+            placeholder="09:00"
+            list={`${fieldId}-time-suggestions`}
+            className="datetime-time-input"
+            aria-label={`${label} time`}
+          />
+          <datalist id={`${fieldId}-time-suggestions`}>
+            {TIME_SUGGESTIONS.map((value) => (
+              <option key={value} value={value} />
+            ))}
+          </datalist>
         </div>
+      </div>
+
+      {calendarOpen && typeof document !== 'undefined' && createPortal(
+        <div ref={popoverRef} className="day-picker-popover" role="dialog" aria-modal="false">
+          <DayPicker
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            disabled={{ before: parseIsoDate(minDate) }}
+          />
+        </div>,
+        document.body
+      )}
+
+      {timeError && (
+        <p className="datetime-validation" role="alert">{timeError}</p>
       )}
     </div>
   );
