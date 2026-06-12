@@ -29,8 +29,33 @@ function todayValue() {
   return new Date().toISOString().split('T')[0];
 }
 
+function capitalizeName(value) {
+  if (!value) return '';
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
+function extractGuestFirstName(email) {
+  const localPart = String(email || '').split('@')[0].split('+')[0];
+  const segments = localPart.split(/[_\.\-]+/).filter(Boolean);
+  return capitalizeName(segments[0] || localPart || '');
+}
+
+function formatGuestNames(guests) {
+  if (!Array.isArray(guests) || guests.length === 0) return 'None';
+  const names = guests.map((guest) => extractGuestFirstName(guest)).filter(Boolean);
+  return names.length ? names.join(', ') : 'None';
+}
+
 function hasOverlap(existingStart, existingEnd, requestedStart, requestedEnd) {
   return requestedStart < existingEnd && requestedEnd > existingStart;
+}
+
+function calculateDurationMinutes(startTime, endTime) {
+  const [startHour, startMin = '0'] = startTime.split(':').map(Number);
+  const [endHour, endMin = '0'] = endTime.split(':').map(Number);
+  const startTotalMin = startHour * 60 + startMin;
+  const endTotalMin = endHour * 60 + endMin;
+  return endTotalMin - startTotalMin;
 }
 
 function getTransporter() {
@@ -86,6 +111,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'End time must be after start time.' }, { status: 400 });
     }
 
+    const durationMinutes = calculateDurationMinutes(startTime, endTime);
+    if (durationMinutes < 1) {
+      return NextResponse.json({ error: 'Booking duration must be at least 1 minute.' }, { status: 400 });
+    }
+
     if (!emailPattern.test(organizerEmail)) {
       return NextResponse.json({ error: 'Please enter a valid booking person email.' }, { status: 400 });
     }
@@ -120,31 +150,101 @@ export async function POST(request) {
     const safeDate = escapeHtml(date);
     const safeStart = escapeHtml(formatTime(startTime));
     const safeEnd = escapeHtml(formatTime(endTime));
+    const guestNames = escapeHtml(formatGuestNames(guests));
 
     const html = `
-      <div style="font-family:Arial,sans-serif;color:#001e2e;line-height:1.5">
-        <h2 style="color:#111844;margin:0 0 16px">Booking Confirmed</h2>
-        <p>Your room booking has been confirmed.</p>
-        <table cellpadding="8" cellspacing="0" style="border-collapse:collapse;border:1px solid #e0e0e0">
-          <tr><td><strong>Room Type</strong></td><td>${safeRoomLabel}</td></tr>
-          <tr><td><strong>Booking Name</strong></td><td>${safeBookingName}</td></tr>
-          <tr><td><strong>Date</strong></td><td>${safeDate}</td></tr>
-          <tr><td><strong>Time</strong></td><td>${safeStart} - ${safeEnd}</td></tr>
-          <tr><td><strong>Agenda</strong></td><td>${safeAgenda}</td></tr>
-          <tr><td><strong>Remarks</strong></td><td>${safeRemarks}</td></tr>
-        </table>
-      </div>
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
+        <body style="margin:0;padding:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;">
+            <tr>
+              <td align="center" style="padding:32px 16px;">
+                <table width="600" border="0" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;">
+                  <tr>
+                    <td style="background-color:#2563eb;padding:32px 24px;border-radius:8px 8px 0 0;text-align:center;color:#ffffff;">
+                      <h1 style="margin:0;font-size:24px;font-weight:700;line-height:1.4;">Booking Confirmed</h1>
+                      <p style="margin:12px 0 0 0;font-size:15px;line-height:1.5;">Your room booking has been successfully confirmed.</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:32px 24px;">
+                      <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;">
+                            <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:13px;">Room</div>
+                            <div style="color:#111827;font-size:14px;">${safeRoomLabel}</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;">
+                            <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:13px;">Meeting Agenda</div>
+                            <div style="color:#111827;font-size:14px;">${safeAgenda}</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;">
+                            <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:13px;">Booking Person</div>
+                            <div style="color:#111827;font-size:14px;">${safeBookingName}</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;">
+                            <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:13px;">Time</div>
+                            <div style="color:#111827;font-size:14px;line-height:1.5;">${safeDate}<br />${safeStart} - ${safeEnd}</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;">
+                            <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:13px;">Guest</div>
+                            <div style="color:#111827;font-size:14px;">${guestNames}</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:16px 0;">
+                            <div style="font-weight:700;color:#374151;margin-bottom:6px;font-size:13px;">Remarks</div>
+                            <div style="color:#111827;font-size:14px;">${safeRemarks}</div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:24px;border-top:1px solid #f3f4f6;text-align:center;color:#6b7280;font-size:13px;line-height:1.5;">
+                      Thank you for using the Tech2Globe Room Booking Portal.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0 24px 16px;text-align:center;color:#9ca3af;font-size:12px;">
+                      © Tech2Globe
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
     `;
 
     const text = [
       'Booking Confirmed',
       '',
-      `Room Type: ${roomLabel || roomType}`,
-      `Booking Name: ${bookingName}`,
-      `Date: ${date}`,
-      `Time: ${formatTime(startTime)} - ${formatTime(endTime)}`,
-      `Agenda: ${agenda}`,
-      `Remarks: ${remarks || 'None'}`
+      'Your room booking has been successfully confirmed.',
+      '',
+      `Room: ${roomLabel || roomType}`,
+      `Meeting Agenda: ${agenda}`,
+      `Booking Person: ${bookingName}`,
+      `Time: ${date}`,
+      `${formatTime(startTime)} - ${formatTime(endTime)}`,
+      `Guest: ${guestNames || 'None'}`,
+      `Remarks: ${remarks || 'None'}`,
+      '',
+      'Thank you for using the Tech2Globe Room Booking Portal.',
+      '© Tech2Globe'
     ].join('\n');
 
     await getTransporter().sendMail({
