@@ -2,6 +2,15 @@
 
 @theme {
   --font-sans: "Poppins", sans-serif;
+
+  /* Tech2Globe brand — aligned with logo (red + charcoal) */
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-500: #d40000;
+  --color-brand-600: #c00000;
+  --color-brand-700: #a80000;
+  --color-brand-800: #8b0000;
+  --color-brand-grey: #333333;
 }
 
 @layer base {
@@ -51,7 +60,7 @@
   input,
   textarea,
   select {
-    @apply min-h-11 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-950 shadow-sm transition focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100;
+    @apply min-h-11 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-950 shadow-sm transition focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100;
   }
 
   textarea {
@@ -60,6 +69,22 @@
 }
 
 @layer components {
+  .btn-brand {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-700 via-brand-600 to-brand-grey px-5 py-3 text-base font-semibold text-white shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .text-brand-gradient {
+    @apply bg-gradient-to-r from-brand-600 via-brand-500 to-brand-grey bg-clip-text text-transparent;
+  }
+
+  .brand-accent-bar {
+    @apply bg-gradient-to-b from-brand-600 to-brand-grey;
+  }
+
+  .brand-icon-badge {
+    @apply bg-brand-50 text-brand-600;
+  }
+
   .material-symbols-outlined {
     font-family: "Material Symbols Outlined";
     font-size: 20px;
@@ -89,15 +114,15 @@
   }
 
   .datetime-picker-combined:not(.datetime-picker-combined--disabled):hover {
-    border-color: #2563eb;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+    border-color: var(--color-brand-600);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-brand-600) 12%, transparent);
   }
 
   .datetime-picker-combined:focus-within:not(.datetime-picker-combined--disabled) {
-    border-color: #2563eb;
-    outline: 2px solid rgba(37, 99, 235, 0.35);
+    border-color: var(--color-brand-600);
+    outline: 2px solid color-mix(in srgb, var(--color-brand-600) 35%, transparent);
     outline-offset: 0;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-brand-600) 12%, transparent);
   }
 
   .datetime-picker-combined--disabled {
@@ -173,8 +198,8 @@
 
   .datetime-combined__time-icon-btn:hover:not(:disabled),
   .datetime-combined__chevron:hover:not(:disabled) {
-    color: #2563eb;
-    background: rgba(37, 99, 235, 0.08);
+    color: var(--color-brand-600);
+    background: color-mix(in srgb, var(--color-brand-600) 8%, transparent);
   }
 
   .datetime-combined__icon {
@@ -221,6 +246,9 @@
     width: min(100vw - 2rem, 24rem);
     max-height: calc(100vh - 4rem);
     overflow: auto;
+    --rdp-accent-color: var(--color-brand-600);
+    --rdp-accent-background-color: var(--color-brand-50);
+    --rdp-today-color: var(--color-brand-600);
   }
 
   .day-picker-popover .rdp-root {
@@ -266,13 +294,13 @@
   }
 
   .datetime-time-option:hover {
-    background: rgba(37, 99, 235, 0.08);
-    color: #2563eb;
+    background: color-mix(in srgb, var(--color-brand-600) 8%, transparent);
+    color: var(--color-brand-600);
   }
 
   .datetime-time-option--selected {
-    background: rgba(37, 99, 235, 0.12);
-    color: #2563eb;
+    background: color-mix(in srgb, var(--color-brand-600) 12%, transparent);
+    color: var(--color-brand-600);
     font-weight: 600;
   }
 

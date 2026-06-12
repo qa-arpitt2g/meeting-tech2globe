@@ -8,7 +8,7 @@ export default function Footer() {
             href="https://www.tech2globe.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold text-slate-900 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="font-semibold text-slate-900 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2"
           >
             Tech2Globe
           </a>

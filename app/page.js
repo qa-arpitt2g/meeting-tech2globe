@@ -194,10 +194,10 @@ export default function Home() {
         {/* ── Hero ── */}
         <section className="mx-auto grid max-w-7xl gap-4 px-4 py-10 md:grid-cols-2 md:items-center md:gap-[60px] md:px-8 md:max-h-[260px] sm:max-h-[220px]">
           <div className="flex min-w-0 items-center gap-4">
-            <div className="mt-0 h-12 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-blue-600 to-violet-500 sm:h-14 md:h-16"></div>
+            <div className="brand-accent-bar mt-0 h-12 w-1.5 shrink-0 rounded-full sm:h-14 md:h-16"></div>
             <h1 className="font-sans text-4xl font-extrabold leading-tight text-slate-950 text-center md:text-left sm:text-5xl md:text-5xl">
               <span>Room Booking</span>
-              <span className="ml-1 bg-gradient-to-r from-blue-700 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">Portal</span>
+              <span className="text-brand-gradient ml-1">Portal</span>
             </h1>
           </div>
           <div className="min-w-0 md:pb-0">
@@ -234,7 +234,7 @@ export default function Home() {
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-700" aria-hidden="true">
+                <div className="brand-icon-badge grid h-10 w-10 shrink-0 place-items-center rounded-lg" aria-hidden="true">
                   <span className="material-symbols-outlined text-[22px]">event</span>
                 </div>
                 <div className="min-w-0">
@@ -244,7 +244,7 @@ export default function Home() {
               </div>
               <button
                 type="button"
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-600"
                 onClick={closeModal}
                 aria-label="Close booking form"
               >
@@ -325,11 +325,11 @@ export default function Home() {
               {/* Invite Guests */}
               <label className="grid gap-2 text-sm font-semibold text-slate-600">
                 Invite Guests
-                <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100">
+                <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-100">
                   {guests.map((guest) => (
-                    <div key={guest} className="inline-flex max-w-full items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-800">
+                    <div key={guest} className="inline-flex max-w-full items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-800">
                       <span className="truncate">{guest}</span>
-                      <button type="button" className="grid h-5 w-5 shrink-0 place-items-center rounded-full hover:bg-blue-100" onClick={() => removeGuest(guest)} aria-label={`Remove ${guest}`}>
+                      <button type="button" className="grid h-5 w-5 shrink-0 place-items-center rounded-full hover:bg-brand-100" onClick={() => removeGuest(guest)} aria-label={`Remove ${guest}`}>
                         <span className="material-symbols-outlined text-[15px]">close</span>
                       </button>
                     </div>
@@ -363,7 +363,7 @@ export default function Home() {
 
             {/* Footer / Submit */}
             <div className="grid shrink-0 gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
-              <button type="submit" form="bookingForm" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-700 to-sky-500 px-5 py-3 text-base font-semibold text-white shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg" disabled={processing}>
+              <button type="submit" form="bookingForm" className="btn-brand w-full sm:text-lg" disabled={processing}>
                 {processing ? (
                   <>
                     <span className="material-symbols-outlined animate-spin">progress_activity</span>
@@ -386,7 +386,7 @@ export default function Home() {
       <div
         role="status"
         aria-live="polite"
-        className={`fixed left-1/2 top-4 z-[60] inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-white shadow-xl transition-transform duration-300 sm:text-base ${toastType === 'error' ? 'bg-red-700' : 'bg-blue-700'} ${toastVisible ? 'translate-y-0' : '-translate-y-24'}`}
+        className={`fixed left-1/2 top-4 z-[60] inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-white shadow-xl transition-transform duration-300 sm:text-base ${toastType === 'error' ? 'bg-red-700' : 'bg-brand-600'} ${toastVisible ? 'translate-y-0' : '-translate-y-24'}`}
       >
         <span className="material-symbols-outlined">{toastType === 'error' ? 'error' : 'task_alt'}</span>
         <span>{toastMessage}</span>
