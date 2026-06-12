@@ -59,37 +59,146 @@
   }
 
   .datetime-picker {
-    @apply min-w-0;
+    @apply min-w-0 w-full;
   }
 
   .datetime-picker-label {
     @apply mb-2 block text-sm font-semibold text-slate-600;
   }
 
-  .datetime-picker-row {
-    @apply flex flex-col gap-3 sm:flex-row sm:items-end;
+  .datetime-picker-combined {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 56px;
+    padding: 0 16px;
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    background: white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, outline 0.2s ease;
   }
 
-  .datetime-field {
-    @apply min-w-0;
+  .datetime-picker-combined:not(.datetime-picker-combined--disabled):hover {
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
   }
 
-  .datetime-field--date,
-  .datetime-field--time {
-    @apply w-full;
+  .datetime-picker-combined:focus-within:not(.datetime-picker-combined--disabled) {
+    border-color: #2563eb;
+    outline: 2px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 0;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
   }
 
-  .datetime-date-button,
-  .datetime-time-input {
-    @apply w-full rounded-[12px] border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-950 shadow-sm transition duration-150 ease-in-out focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100;
+  .datetime-picker-combined--disabled {
+    @apply cursor-not-allowed opacity-60;
+    background: #f8fafc;
   }
 
-  .datetime-date-button {
-    @apply flex items-center justify-between gap-2;
+  .datetime-combined__date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1 1 auto;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #0f172a;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: none;
   }
 
-  .datetime-time-input {
-    @apply appearance-none;
+  .datetime-combined__date:disabled {
+    cursor: default;
+  }
+
+  .datetime-combined__date-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .datetime-combined__divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 24px;
+    margin: 0 12px;
+    background: #dbe2ea;
+  }
+
+  .datetime-combined__time {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex: 0 1 auto;
+    height: 100%;
+  }
+
+  .datetime-combined__time-icon-btn,
+  .datetime-combined__chevron {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #64748b;
+    box-shadow: none;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .datetime-combined__chevron .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  .datetime-combined__time-icon-btn:hover:not(:disabled),
+  .datetime-combined__chevron:hover:not(:disabled) {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.08);
+  }
+
+  .datetime-combined__icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    color: #64748b;
+  }
+
+  .datetime-combined__time-input {
+    min-width: 52px;
+    width: 52px;
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #0f172a;
+    text-align: center;
+    box-shadow: none;
+    outline: none;
+  }
+
+  .datetime-combined__time-input:focus {
+    border: 0;
+    outline: none;
+    box-shadow: none;
+  }
+
+  .datetime-combined__time-input::placeholder {
+    color: #94a3b8;
   }
 
   .day-picker-popover {
@@ -97,6 +206,59 @@
     width: min(100vw - 2rem, 24rem);
     max-height: calc(100vh - 4rem);
     overflow: auto;
+  }
+
+  .day-picker-popover .rdp-root {
+    width: 100%;
+  }
+
+  .day-picker-popover .rdp-month {
+    width: 100%;
+  }
+
+  .day-picker-popover .rdp-month_caption {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .datetime-time-popover {
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    width: min(100vw - 2rem, 7rem);
+    max-height: min(16rem, calc(100vh - 8rem));
+    overflow-y: auto;
+    padding: 4px;
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  .datetime-time-option {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #0f172a;
+    text-align: center;
+    box-shadow: none;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .datetime-time-option:hover {
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb;
+  }
+
+  .datetime-time-option--selected {
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+    font-weight: 600;
   }
 
   .datetime-validation {

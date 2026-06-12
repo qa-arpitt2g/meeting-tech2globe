@@ -74,8 +74,8 @@ export function parseTimeToMinutes(value) {
   return Number(hour) * 60 + Number(minute);
 }
 
-export function nextTimeAfterStart(startTime) {
-  const next = parseTimeToMinutes(startTime) + 60;
+export function nextTimeAfterStart(startTime, minGapMinutes = 1) {
+  const next = parseTimeToMinutes(startTime) + minGapMinutes;
   if (next >= 24 * 60) return null;
   const hour = Math.floor(next / 60);
   const minute = next % 60;
@@ -92,13 +92,9 @@ function coerceDate(value) {
   return parsed || null;
 }
 
-function toDateTime(dateIso, time) {
-  if (!dateIso || !time) return null;
-  const date = coerceDate(dateIso);
-  if (!date) return null;
-  const [hour, minute] = time.split(':').map(Number);
-  date.setHours(hour, minute, 0, 0);
-  return date;
+function filterTimeSuggestions(minTime) {
+  if (!minTime) return TIME_SUGGESTIONS;
+  return TIME_SUGGESTIONS.filter((value) => value >= minTime);
 }
 
 export default function DateTimePicker({
@@ -108,20 +104,31 @@ export default function DateTimePicker({
   time,
   onChange,
   minDate = todayValue(),
+  minTime = null,
+  fixedDate = null,
   disabled = false,
   required = false
 }) {
   const fallbackId = useId();
   const fieldId = id || fallbackId;
+  const effectiveDate = fixedDate || date;
+
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
   const [localTime, setLocalTime] = useState(time || '');
   const [timeError, setTimeError] = useState('');
-  const anchorRef = useRef(null);
-  const popoverRef = useRef(null);
-  const popperInstance = useRef(null);
 
-  const selectedDate = useMemo(() => coerceDate(date), [date]);
+  const combinedRef = useRef(null);
+  const dateRef = useRef(null);
+  const timeRef = useRef(null);
+  const calendarPopoverRef = useRef(null);
+  const timePopoverRef = useRef(null);
+  const calendarPopper = useRef(null);
+  const timePopper = useRef(null);
+
+  const selectedDate = useMemo(() => coerceDate(effectiveDate), [effectiveDate]);
   const formattedDate = selectedDate ? formatDateDisplay(selectedDate) : '';
+  const timeSuggestions = useMemo(() => filterTimeSuggestions(minTime), [minTime]);
 
   useEffect(() => {
     setLocalTime(time || '');
@@ -129,8 +136,9 @@ export default function DateTimePicker({
 
   useEffect(() => {
     if (!calendarOpen) return;
-    if (!anchorRef.current || !popoverRef.current) return;
-    popperInstance.current = createPopper(anchorRef.current, popoverRef.current, {
+    if (!dateRef.current || !calendarPopoverRef.current) return;
+
+    calendarPopper.current = createPopper(dateRef.current, calendarPopoverRef.current, {
       placement: 'bottom-start',
       modifiers: [
         { name: 'flip', options: { fallbackPlacements: ['top-start', 'bottom-start', 'top-end', 'bottom-end'] } },
@@ -140,25 +148,56 @@ export default function DateTimePicker({
     });
 
     return () => {
-      popperInstance.current?.destroy();
-      popperInstance.current = null;
+      calendarPopper.current?.destroy();
+      calendarPopper.current = null;
     };
   }, [calendarOpen]);
 
   useEffect(() => {
-    if (!calendarOpen) return undefined;
+    if (!timeOpen) return;
+    if (!timeRef.current || !timePopoverRef.current) return;
+
+    timePopper.current = createPopper(timeRef.current, timePopoverRef.current, {
+      placement: 'bottom-end',
+      modifiers: [
+        { name: 'flip', options: { fallbackPlacements: ['top-end', 'bottom-end', 'top-start', 'bottom-start'] } },
+        { name: 'preventOverflow', options: { rootBoundary: 'viewport', padding: 8 } },
+        { name: 'offset', options: { offset: [0, 8] } }
+      ]
+    });
+
+    return () => {
+      timePopper.current?.destroy();
+      timePopper.current = null;
+    };
+  }, [timeOpen]);
+
+  useEffect(() => {
+    if (!calendarOpen && !timeOpen) return undefined;
 
     const handleClickOutside = (event) => {
-      if (
-        anchorRef.current && !anchorRef.current.contains(event.target) &&
-        popoverRef.current && !popoverRef.current.contains(event.target)
-      ) {
-        setCalendarOpen(false);
+      const target = event.target;
+
+      if (calendarOpen) {
+        const inCalendar =
+          dateRef.current?.contains(target) ||
+          calendarPopoverRef.current?.contains(target);
+        if (!inCalendar) setCalendarOpen(false);
+      }
+
+      if (timeOpen) {
+        const inTime =
+          timeRef.current?.contains(target) ||
+          timePopoverRef.current?.contains(target);
+        if (!inTime) setTimeOpen(false);
       }
     };
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setCalendarOpen(false);
+      if (event.key === 'Escape') {
+        setCalendarOpen(false);
+        setTimeOpen(false);
+      }
     };
 
     window.addEventListener('mousedown', handleClickOutside);
@@ -168,12 +207,37 @@ export default function DateTimePicker({
       window.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [calendarOpen]);
+  }, [calendarOpen, timeOpen]);
+
+  const commitTime = (rawValue) => {
+    if (disabled) return;
+
+    if (!rawValue.trim()) {
+      setTimeError(required ? 'Please enter a time.' : '');
+      onChange(effectiveDate || '', '');
+      return;
+    }
+
+    const normalized = normalizeTimeInput(rawValue);
+    if (!normalized) {
+      setTimeError('Invalid time. Use 24-hour format (e.g. 09:00).');
+      return;
+    }
+
+    if (minTime && normalized < minTime) {
+      setTimeError(`Time must be ${minTime} or later.`);
+      return;
+    }
+
+    setLocalTime(normalized);
+    setTimeError('');
+    onChange(effectiveDate || '', normalized);
+  };
 
   const handleDateSelect = (selected) => {
-    if (!selected || disabled) return;
+    if (!selected || disabled || fixedDate) return;
     setCalendarOpen(false);
-    onChange(toIsoDate(selected), time || '');
+    onChange(toIsoDate(selected), time || localTime || '');
   };
 
   const handleTimeChange = (event) => {
@@ -182,75 +246,150 @@ export default function DateTimePicker({
   };
 
   const handleTimeBlur = () => {
-    if (disabled) return;
-    if (!localTime.trim()) {
-      setTimeError(required ? 'Please enter a time.' : '');
-      onChange(date || '', '');
-      return;
-    }
+    commitTime(localTime);
+  };
 
-    const normalized = normalizeTimeInput(localTime);
-    if (!normalized) {
-      setTimeError('Invalid time. Use 09:00, 13:00 or 9:00 AM.');
-      return;
-    }
-
-    setLocalTime(normalized);
+  const handleTimeSelect = (value) => {
+    setLocalTime(value);
     setTimeError('');
-    onChange(date || '', normalized);
+    setTimeOpen(false);
+    onChange(effectiveDate || '', value);
+  };
+
+  const openCalendar = () => {
+    if (disabled || fixedDate) return;
+    setTimeOpen(false);
+    setCalendarOpen((open) => !open);
+  };
+
+  const openTimeDropdown = () => {
+    if (disabled) return;
+    setCalendarOpen(false);
+    setTimeOpen((open) => !open);
+  };
+
+  const handleTimeKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitTime(localTime);
+      setTimeOpen(false);
+    }
+    if (event.key === 'ArrowDown' && !timeOpen) {
+      event.preventDefault();
+      openTimeDropdown();
+    }
   };
 
   return (
     <div className="datetime-picker">
-      <label htmlFor={fieldId} className="datetime-picker-label">
+      <span id={`${fieldId}-label`} className="datetime-picker-label">
         {label}
-      </label>
-      <div className="datetime-picker-row">
-        <div className="datetime-field datetime-field--date">
-          <button
-            ref={anchorRef}
-            type="button"
-            className="datetime-date-button"
-            onClick={() => setCalendarOpen((open) => !open)}
-            disabled={disabled}
-            aria-haspopup="dialog"
-            aria-expanded={calendarOpen}
-          >
-            <span>{formattedDate || 'Select date'}</span>
-            <span className="material-symbols-outlined">calendar_month</span>
-          </button>
-        </div>
+      </span>
 
-        <div className="datetime-field datetime-field--time">
+      <div
+        ref={combinedRef}
+        className={`datetime-picker-combined${disabled ? ' datetime-picker-combined--disabled' : ''}`}
+        role="group"
+        aria-labelledby={`${fieldId}-label`}
+      >
+        <button
+          ref={dateRef}
+          type="button"
+          className="datetime-combined__date"
+          onClick={openCalendar}
+          disabled={disabled || Boolean(fixedDate)}
+          aria-haspopup="dialog"
+          aria-expanded={calendarOpen}
+          aria-label={formattedDate ? `Date: ${formattedDate}` : 'Select date'}
+        >
+          <span className="material-symbols-outlined datetime-combined__icon" aria-hidden="true">
+            calendar_month
+          </span>
+          <span className="datetime-combined__date-text">
+            {formattedDate || 'Select date'}
+          </span>
+        </button>
+
+        <span className="datetime-combined__divider" aria-hidden="true" />
+
+        <div ref={timeRef} className="datetime-combined__time">
+          <button
+            type="button"
+            className="datetime-combined__time-icon-btn"
+            onClick={openTimeDropdown}
+            disabled={disabled}
+            tabIndex={-1}
+            aria-label="Open time picker"
+          >
+            <span className="material-symbols-outlined datetime-combined__icon" aria-hidden="true">
+              schedule
+            </span>
+          </button>
+
           <input
             id={`${fieldId}-time`}
             type="text"
+            inputMode="numeric"
             value={localTime}
             onChange={handleTimeChange}
             onBlur={handleTimeBlur}
+            onKeyDown={handleTimeKeyDown}
+            onFocus={() => setCalendarOpen(false)}
             disabled={disabled}
             required={required}
             placeholder="09:00"
-            list={`${fieldId}-time-suggestions`}
-            className="datetime-time-input"
+            className="datetime-combined__time-input"
             aria-label={`${label} time`}
+            aria-expanded={timeOpen}
+            aria-haspopup="listbox"
+            autoComplete="off"
           />
-          <datalist id={`${fieldId}-time-suggestions`}>
-            {TIME_SUGGESTIONS.map((value) => (
-              <option key={value} value={value} />
-            ))}
-          </datalist>
+
+          <button
+            type="button"
+            className="datetime-combined__chevron"
+            onClick={openTimeDropdown}
+            disabled={disabled}
+            aria-label="Toggle time options"
+            aria-expanded={timeOpen}
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
+          </button>
         </div>
       </div>
 
       {calendarOpen && typeof document !== 'undefined' && createPortal(
-        <div ref={popoverRef} className="day-picker-popover" role="dialog" aria-modal="false">
+        <div ref={calendarPopoverRef} className="day-picker-popover" role="dialog" aria-modal="false">
           <DayPicker
             mode="single"
+            navLayout="around"
             selected={selectedDate}
             onSelect={handleDateSelect}
             disabled={{ before: parseIsoDate(minDate) }}
           />
+        </div>,
+        document.body
+      )}
+
+      {timeOpen && typeof document !== 'undefined' && createPortal(
+        <div
+          ref={timePopoverRef}
+          className="datetime-time-popover"
+          role="listbox"
+          aria-label="Time options"
+        >
+          {timeSuggestions.map((value) => (
+            <button
+              key={value}
+              type="button"
+              role="option"
+              aria-selected={localTime === value}
+              className={`datetime-time-option${localTime === value ? ' datetime-time-option--selected' : ''}`}
+              onClick={() => handleTimeSelect(value)}
+            >
+              {value}
+            </button>
+          ))}
         </div>,
         document.body
       )}
