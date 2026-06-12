@@ -32,16 +32,14 @@ export default function FeatureCard({ title, description, buttonText, buttonVari
         <p className="mt-3 flex-1 text-sm leading-6 text-slate-600 sm:text-base">
           {description}
         </p>
-        <button
-          type="button"
-          onClick={onBook}
-          className="btn-brand mt-6 w-full text-center"
-        >
-          <span>{buttonText}</span>
-          <span className="material-symbols-outlined text-xl" aria-hidden="true">
-            {isSecondary ? 'bolt' : 'arrow_forward'}
-          </span>
-        </button>
+        <div className="mt-6 flex justify-center">
+          <button type="button" onClick={onBook} className="btn-brand">
+            <span>{buttonText}</span>
+            <span className="material-symbols-outlined text-lg" aria-hidden="true">
+              {isSecondary ? 'bolt' : 'arrow_forward'}
+            </span>
+          </button>
+        </div>
       </div>
     </article>
   );

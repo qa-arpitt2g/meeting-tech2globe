@@ -70,7 +70,7 @@
 
 @layer components {
   .btn-brand {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-700 via-brand-600 to-brand-grey px-5 py-3 text-base font-semibold text-white shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-brand-700 via-brand-600 to-brand-grey px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .text-brand-gradient {

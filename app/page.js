@@ -363,7 +363,8 @@ export default function Home() {
 
             {/* Footer / Submit */}
             <div className="grid shrink-0 gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
-              <button type="submit" form="bookingForm" className="btn-brand w-full sm:text-lg" disabled={processing}>
+              <div className="flex justify-center">
+              <button type="submit" form="bookingForm" className="btn-brand min-w-[10.5rem]" disabled={processing}>
                 {processing ? (
                   <>
                     <span className="material-symbols-outlined animate-spin">progress_activity</span>
@@ -376,6 +377,7 @@ export default function Home() {
                   </>
                 )}
               </button>
+              </div>
               <p className="text-center text-xs font-semibold uppercase tracking-wide text-slate-500">A confirmation invite will be sent to all participants</p>
             </div>
           </section>
