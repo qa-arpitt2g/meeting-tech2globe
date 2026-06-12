@@ -305,7 +305,7 @@ export default function Home() {
                   type="text"
                   value={formData.bookingName}
                   onChange={updateField}
-                  placeholder="e.g. Priya Sharma"
+                  placeholder="Full Name"
                   required
                 />
               </label>
@@ -319,7 +319,7 @@ export default function Home() {
                   type="email"
                   value={formData.organizerEmail}
                   onChange={updateField}
-                  placeholder="organizer@enterprise.com"
+                  placeholder="Your Email Address"
                   required
                 />
               </label>
