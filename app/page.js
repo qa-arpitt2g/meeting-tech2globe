@@ -363,7 +363,7 @@ export default function Home() {
 
             {/* Footer / Submit */}
             <div className="grid shrink-0 gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
-              <button type="submit" form="bookingForm" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 py-3 text-base font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg" disabled={processing}>
+              <button type="submit" form="bookingForm" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-700 to-sky-500 px-5 py-3 text-base font-semibold text-white shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg" disabled={processing}>
                 {processing ? (
                   <>
                     <span className="material-symbols-outlined animate-spin">progress_activity</span>

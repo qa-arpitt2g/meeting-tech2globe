@@ -1,8 +1,9 @@
 import Image from 'next/image';
 
+const buttonClass = 'bg-gradient-to-r from-blue-700 to-sky-500';
+
 export default function FeatureCard({ title, description, buttonText, buttonVariant, icon, image, alt, capacity, onBook }) {
   const isSecondary = buttonVariant === 'secondary';
-  const accentClass = isSecondary ? 'from-violet-600 to-fuchsia-500' : 'from-blue-700 to-sky-500';
   const iconClass = isSecondary ? 'text-violet-600 bg-violet-50' : 'text-blue-700 bg-blue-50';
 
   return (
@@ -37,7 +38,7 @@ export default function FeatureCard({ title, description, buttonText, buttonVari
         <button
           type="button"
           onClick={onBook}
-          className={`mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r ${accentClass} px-5 py-3 text-center text-base font-semibold text-white shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+          className={`mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg ${buttonClass} px-5 py-3 text-center text-base font-semibold text-white shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
         >
           <span>{buttonText}</span>
           <span className="material-symbols-outlined text-xl" aria-hidden="true">
