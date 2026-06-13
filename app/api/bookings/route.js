@@ -187,7 +187,7 @@ export async function POST(request) {
                   <tr>
                     <td style="background-color:#2563eb;padding:32px 24px;border-radius:8px 8px 0 0;text-align:center;color:#ffffff;">
                       <h1 style="margin:0;font-size:24px;font-weight:700;line-height:1.4;">Booking Confirmed</h1>
-                      <p style="margin:12px 0 0 0;font-size:15px;line-height:1.5;">Your room booking has been successfully confirmed.</p>
+                      <p style="margin:12px 0 0 0;font-size:15px;line-height:1.5;">Your booking has been successfully confirmed.</p>
                     </td>
                   </tr>
                   <tr>
@@ -253,7 +253,7 @@ export async function POST(request) {
     const text = [
       'Booking Confirmed',
       '',
-      'Your room booking has been successfully confirmed.',
+      'Your booking has been successfully confirmed.',
       '',
       `Room: ${roomLabel || roomType}`,
       `Meeting Agenda: ${agenda}`,
