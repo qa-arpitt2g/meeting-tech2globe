@@ -24,7 +24,7 @@ const featureCards = [
     buttonVariant: 'primary',
     icon: 'groups',
     image:
-      '/assets/Conference.png',
+      '/assets/Conference.webp',
     alt: 'Conference room interior',
   },
   {
@@ -36,7 +36,7 @@ const featureCards = [
     buttonVariant: 'secondary',
     icon: 'meeting_room',
     image:
-      '/assets/Meeting.png',
+      '/assets/Meeting.webp',
     alt: 'Meeting room interior',    
   }
 ];
@@ -187,33 +187,31 @@ export default function Home() {
   };
 
   return (
-    <>
-      <Header />
-      <main className="bg-slate-50 bg-[radial-gradient(rgba(15,23,42,0.08)_1px,transparent_1px)] bg-[length:24px_24px]">
+    <div className="landing-page">
+      <div className="landing-page__bg" aria-hidden="true" />
+      <div className="landing-page__overlay" aria-hidden="true" />
 
-        {/* ── Hero ── */}
-        <section className="mx-auto grid max-w-7xl gap-4 px-4 py-10 md:grid-cols-2 md:items-center md:gap-[60px] md:px-8 md:max-h-[260px] sm:max-h-[220px]">
-          <div className="flex min-w-0 items-center gap-4">
-            <div className="brand-accent-bar mt-0 h-12 w-1.5 shrink-0 rounded-full sm:h-14 md:h-16"></div>
-            <h1 className="font-sans text-4xl font-extrabold leading-tight text-slate-950 text-center md:text-left sm:text-5xl md:text-5xl">
-              <span>Room Booking</span>
-              <span className="text-brand-gradient ml-1">Portal</span>
+      <Header />
+
+      <main className="landing-main">
+        <section className="landing-hero" aria-labelledby="hero-heading">
+          <div className="landing-hero__content">
+            <div className="brand-accent-line" aria-hidden="true" />
+            <h1 id="hero-heading" className="landing-hero__heading">
+              Room Booking
+              <span className="landing-hero__portal">Portal</span>
             </h1>
-          </div>
-          <div className="min-w-0 md:pb-0">
-            <p className="max-w-[500px] text-base leading-7 text-slate-600 text-center md:text-right md:text-lg md:leading-8 md:ml-auto">
+            <p className="landing-hero__tagline">
               Reserve Conference Rooms and Meeting Rooms in Seconds. Experience frictionless workplace logistics with our enterprise-grade scheduling platform.
             </p>
           </div>
-        </section>
 
-        {/* ── Feature Cards ── */}
-        <section className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 pb-12 sm:px-6 md:grid-cols-2 md:gap-5 lg:gap-8 lg:px-8 xl:pb-16">
-          {featureCards.map((card) => (
-            <FeatureCard key={card.title} {...card} onBook={() => openModal(card)} />
-          ))}
+          <div className="landing-hero__cards">
+            {featureCards.map((card) => (
+              <FeatureCard key={card.title} {...card} onBook={() => openModal(card)} />
+            ))}
+          </div>
         </section>
-
       </main>
 
       <Footer />
@@ -393,6 +391,6 @@ export default function Home() {
         <span className="material-symbols-outlined">{toastType === 'error' ? 'error' : 'task_alt'}</span>
         <span>{toastMessage}</span>
       </div>
-    </>
+    </div>
   );
 }
