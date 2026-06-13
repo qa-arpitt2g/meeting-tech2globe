@@ -37,7 +37,7 @@ const featureCards = [
     icon: 'meeting_room',
     image:
       '/assets/Meeting.webp',
-    alt: 'Meeting room interior',    
+    alt: 'Meeting room interior',
   }
 ];
 
@@ -198,8 +198,8 @@ export default function Home() {
           <div className="landing-hero__content">
             <div className="brand-accent-line" aria-hidden="true" />
             <h1 id="hero-heading" className="landing-hero__heading">
-              Room Booking
-              <span className="landing-hero__portal">Portal</span>
+              Meeting Room
+              <span className="landing-hero__portal">Booking Portal</span>
             </h1>
             <p className="landing-hero__tagline">
               Reserve Conference Rooms and Meeting Rooms in Seconds. Experience frictionless workplace logistics with our enterprise-grade scheduling platform.
@@ -362,19 +362,19 @@ export default function Home() {
             {/* Footer / Submit */}
             <div className="grid shrink-0 gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
               <div className="flex justify-center">
-              <button type="submit" form="bookingForm" className="btn-brand min-w-[10.5rem]" disabled={processing}>
-                {processing ? (
-                  <>
-                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined">bolt</span>
-                    Book Now
-                  </>
-                )}
-              </button>
+                <button type="submit" form="bookingForm" className="btn-brand min-w-[10.5rem]" disabled={processing}>
+                  {processing ? (
+                    <>
+                      <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined">bolt</span>
+                      Book Now
+                    </>
+                  )}
+                </button>
               </div>
               <p className="text-center text-xs font-semibold uppercase tracking-wide text-slate-500">A confirmation invite will be sent to all participants</p>
             </div>
